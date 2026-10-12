@@ -75,7 +75,7 @@ The resulting canonical model frame contains:
 | `ratio` | Covered area divided by total area |
 | `spatial_group` | Coarse geographic cell used to separate train and evaluation |
 
-See `data.py` for validation and its neighborhood allowlist. The app displays aggregate accepted/rejected/duplicate counts, never uploaded rows. Optional sensitive columns are not part of the model contract. Raw column aliases are not inferred.
+See `data.py` for validation and its neighborhood allowlist. Loader reports include aggregate accepted/rejected/duplicate counts; the interface keeps the training/evaluation counts and never displays uploaded rows. Optional sensitive columns are not part of the model contract. Raw column aliases are not inferred.
 
 ## Evaluation and leakage controls
 

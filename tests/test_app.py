@@ -19,9 +19,13 @@ def demo(monkeypatch):
     return app
 
 
-def test_demo_starts_with_author_declaration_and_uploads_disabled(demo):
-    assert any("Dataset ficticio proporcionado por el autor" in element.value for element in demo.info)
-    assert any("no verificado de forma independiente" in element.value for element in demo.info)
+def test_demo_has_one_discreet_legend_and_uploads_disabled(demo):
+    assert [element.value for element in demo.caption].count("Demo educativa con datos ficticios") == 1
+    assert not demo.info
+    assert not demo.warning
+    visible_text = "\n".join(element.value for kind in ("caption", "markdown", "info", "warning") for element in demo.get(kind))
+    for removed_text in ("Es un ejercicio educativo", "proyección autorizada", "Declaración del autor", "no verificado", "ocho campos", "No representa precios de mercado"):
+        assert removed_text not in visible_text
     assert not demo.get("file_uploader")
     assert not demo.radio
     assert any("Cobertura" in metric.label for metric in demo.metric)
@@ -29,7 +33,7 @@ def test_demo_starts_with_author_declaration_and_uploads_disabled(demo):
     train, test, _ = data.split_data(frame, test_fraction=0.2, seed=42)
     expected_counts = f"{len(train):,} registros para entrenamiento".replace(",", ".")
     assert any(expected_counts in element.value for element in demo.caption)
-    assert not any("sintética" in element.value.lower() for element in demo.info)
+    assert any("Metodología, datos y límites" in element.value for element in demo.caption)
 
 
 def test_demo_form_predicts_and_keeps_dataset_labels(demo):
@@ -37,7 +41,8 @@ def test_demo_form_predicts_and_keeps_dataset_labels(demo):
     assert not demo.exception
     assert any(metric.label == "Precio estimado del dataset por m²" for metric in demo.metric)
     assert any(metric.label == "Total implícito según la superficie ingresada" for metric in demo.metric)
-    assert any("declarado ficticio por el autor" in element.value for element in demo.info)
+    assert [element.value for element in demo.caption].count("Demo educativa con datos ficticios") == 1
+    assert not demo.info
 
 
 def test_covered_area_larger_than_total_shows_error_without_prediction(demo):
@@ -57,8 +62,8 @@ def test_upload_requires_environment_opt_in_and_acknowledgement(monkeypatch):
     assert not app.exception
     assert not app.get("file_uploader")
     assert any("servidor" in element.value for element in app.info)
-    assert not any("Dataset ficticio proporcionado por el autor" in element.value for element in app.info)
-    assert any("no se aplica" in element.value for element in app.caption)
+    assert not any("datos ficticios" in element.value for element in app.caption)
+    assert any("PRIVACY.md" in element.value for element in app.caption)
     app.checkbox[0].check().run()
     assert not app.exception
     assert len(app.get("file_uploader")) == 1
